@@ -10,6 +10,8 @@ namespace ChromecastBackgroundDownloader
 {
     public class Program
     {
+        private const string DestinationFolder = @"Y:\Pictures\Chromecast Backgrounds";
+
         public static void Main(string[] args)
         {
             var backgroundUrls = parseBackgrounds();
@@ -35,9 +37,9 @@ namespace ChromecastBackgroundDownloader
             }
         }
 
-        private static async Task downloadBackgrounds(string url, string fileName, int index, int total)
+        private static async Task downloadBackground(string url, string fileName, int index, int total)
         {
-            var path = $@"\\vmware-host\Shared Folders\miccar\Pictures\Chromecast Backgrounds\{fileName}";
+            var path = $@"{DestinationFolder}\{fileName}";
             if (File.Exists(path))
             {
                 Console.WriteLine($"[{index}/{total}] {fileName} already exists. Skipping");
