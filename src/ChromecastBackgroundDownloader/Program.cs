@@ -10,12 +10,15 @@ namespace ChromecastBackgroundDownloader
 {
     public class Program
     {
-        private const string DestinationFolder = @"Y:\Pictures\Chromecast Backgrounds";
+        private const string DestinationFolder = @"C:\Users\ecarl\Pictures\Chrome Backgrounds";
 
         public static void Main(string[] args)
         {
-            var backgroundUrls = parseBackgrounds();
-            downloadBackgrounds(backgroundUrls).Wait();
+            var backgroundTasks = parseBackgrounds().Select(backgroundUrl =>
+                downloadBackground(backgroundUrl.Value, backgroundUrl.Key));
+
+            Task.WhenAll(backgroundTasks)
+                .Wait();
         }
 
         private static IDictionary<string, string> parseBackgrounds()
@@ -26,23 +29,12 @@ namespace ChromecastBackgroundDownloader
                 .ToDictionary(url => url.Groups[2].Value, fileName => fileName.Groups[1].Value);
         }
 
-        private static async Task downloadBackgrounds(IDictionary<string, string> backgroundUrls)
-        {
-            var total = backgroundUrls.Count;
-            var index = 1;
-            foreach (var backgroundUrl in backgroundUrls)
-            {
-                await downloadBackgrounds(backgroundUrl.Value, backgroundUrl.Key, index, total);
-                index++;
-            }
-        }
-
-        private static async Task downloadBackground(string url, string fileName, int index, int total)
+        private static async Task downloadBackground(string url, string fileName)
         {
             var path = $@"{DestinationFolder}\{fileName}";
             if (File.Exists(path))
             {
-                Console.WriteLine($"[{index}/{total}] {fileName} already exists. Skipping");
+                Console.WriteLine($"{fileName} already exists. Skipping");
                 return;
             }
 
@@ -56,11 +48,11 @@ namespace ChromecastBackgroundDownloader
                 {
                     await contentStream.CopyToAsync(fileStream);
                 }
-                Console.WriteLine($"[{index}/{total}] Finished downloading {fileName}");
+                Console.WriteLine($"Finished downloading {fileName}");
             }
             catch (Exception e)
             {
-                Console.WriteLine($"[{index}/{total}] Error occured while downloading {fileName}\r\n    {e.Message}");
+                Console.WriteLine($"Error occured while downloading {fileName}\r\n    {e.Message}");
             }
         }
     }
